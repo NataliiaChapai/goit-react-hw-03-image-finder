@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import s from './App.module.css';
+import getImages from './Api/api';
 import Searchbar from './Searchbar/Searchbar';
 import Loader from './Loader/Loader';
 import ImageGallery from './ImageGallery/ImageGallery';
@@ -18,29 +19,25 @@ class App extends Component {
   
   componentDidUpdate(prevProps, prevState) {
     
-    const BASE_URL = `https://pixabay.com/api/?q=${this.state.title}&page=${this.state.page}&key=25747896-3b3c804de6476e3d2d2bc0cb1&image_type=photo&orientation=horizontal&per_page=12`;
-    
     if (this.state.title !== prevState.title) {
       this.setState({images: null, enabled: true});
-      fetch(BASE_URL)
-        .then(response => response.json())
-        .then(({ hits: images }) => {
-          this.setState({ images, page: 1 })
+      getImages(this.state.title, this.state.page)
+        .then(images => {
+          this.setState({ images })
         }).finally(() => this.setState({enabled: false}));
     } 
     
-     if (this.state.page !== prevState.page) {
+     if (this.state.title === prevState.title && this.state.page !== prevState.page) {
       this.setState({enabled: true});
-      fetch(BASE_URL)
-        .then(response => response.json())
-        .then(({ hits: images }) => {
+      getImages(this.state.title, this.state.page)
+        .then(images => {
           this.setState({ images: [...prevState.images, ...images] });
           }).finally(() => this.setState({enabled: false}));
     }    
   }
   
-  handleFormSubmit = title => {
-    this.setState({ title });
+  handleFormSubmit = (title) => {
+    this.setState({ title, page: 1 });
   }
 
   handleBtnClick = () => {
